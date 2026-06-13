@@ -1,0 +1,66 @@
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-container
+
+    networks:
+      - employee-network
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dockertest
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data_dockerassignment:/var/lib/mysql
+
+
+  app:
+    image: gauri1498/dockerbasic-springbootcrud:v3
+    container_name: docker-springbootapp
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - mysql
+   
+    networks:
+      - employee-network
+
+    # A bind mount maps a folder from your machine into a container.
+    volumes:
+    - ./backend-logs:/logs
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dockertest
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+
+  frontend:
+    image: gauri1498/employee-frontend:v1
+    container_name: react-app
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - app
+
+    networks:
+      - employee-network
+
+
+volumes:
+  mysql_data_dockerassignment:
+    external: true
+
+networks:
+  employee-network:
+    name: employee-network
+    driver: bridge
+    external: true
